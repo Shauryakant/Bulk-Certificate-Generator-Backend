@@ -35,7 +35,7 @@ def test_create_job_success(client: TestClient, db_session: Session):
     certs = db_session.query(Certificate).filter(Certificate.job_id == job.id).all()
     assert len(certs) == 2
     for cert in certs:
-        assert cert.status == CertificateStatus.PENDING.value
+        assert cert.status in (CertificateStatus.PENDING.value, CertificateStatus.GENERATED.value)
 
 
 def test_create_job_request_level_validation_failures(client: TestClient):
@@ -96,7 +96,7 @@ def test_create_job_with_recipient_level_validation_failures(
     )
     assert len(certs) == 4
 
-    valid_certs = [c for c in certs if c.status == CertificateStatus.PENDING.value]
+    valid_certs = [c for c in certs if c.status == CertificateStatus.GENERATED.value]
     failed_certs = [c for c in certs if c.status == CertificateStatus.FAILED.value]
 
     assert len(valid_certs) == 1

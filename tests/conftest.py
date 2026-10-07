@@ -21,8 +21,8 @@ def temp_storage_dir() -> Generator[str, None, None]:
 
 
 @pytest.fixture
-def test_settings(temp_storage_dir: str) -> Settings:
-    return Settings(
+def test_settings(temp_storage_dir: str, monkeypatch: pytest.MonkeyPatch) -> Settings:
+    settings = Settings(
         APP_NAME="Test Certificate API",
         ENV="testing",
         DEBUG=True,
@@ -32,6 +32,10 @@ def test_settings(temp_storage_dir: str) -> Settings:
         WORKER_THREADS=2,
         SYNC_WORKER=True,  # Run worker synchronously in tests
     )
+    monkeypatch.setattr("app.core.config.get_settings", lambda: settings)
+    monkeypatch.setattr("app.services.worker.get_settings", lambda: settings)
+    monkeypatch.setattr("app.api.jobs.get_settings", lambda: settings)
+    return settings
 
 
 @pytest.fixture
@@ -45,17 +49,29 @@ def db_session(test_settings: Settings) -> Generator[Session, None, None]:
     Base.metadata.create_all(bind=engine)
     TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+    import app.db.session
+    import app.services.worker
+
+    orig_session_local = app.db.session.SessionLocal
+    orig_worker_session_local = app.services.worker.SessionLocal
+
+    app.db.session.SessionLocal = TestingSessionLocal
+    app.services.worker.SessionLocal = TestingSessionLocal
+
     db = TestingSessionLocal()
     try:
         yield db
     finally:
         db.close()
         Base.metadata.drop_all(bind=engine)
+        app.db.session.SessionLocal = orig_session_local
+        app.services.worker.SessionLocal = orig_worker_session_local
 
 
 @pytest.fixture
 def client(db_session: Session, test_settings: Settings) -> Generator[TestClient, None, None]:
     def override_get_db() -> Generator[Session, None, None]:
+        db_session.expire_all()
         yield db_session
 
     def override_get_settings() -> Settings:
