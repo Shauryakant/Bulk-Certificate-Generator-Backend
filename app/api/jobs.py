@@ -1,11 +1,15 @@
+import io
 import math
+import zipfile
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings, get_settings
-from app.core.errors import NotFoundException
-from app.db.models import Certificate, CertificateStatus, Job
+from app.core.errors import ConflictException, NotFoundException
+from app.db.models import Certificate, CertificateStatus, Job, JobStatus
 from app.db.session import get_db
 from app.schemas.certificates import CertificateResponse, PaginatedCertificatesResponse
 from app.schemas.jobs import JobCreateRequest, JobCreateResponse, JobStatusResponse
@@ -124,4 +128,53 @@ def list_job_certificates(
         page=page,
         page_size=page_size,
         total_pages=total_pages,
+    )
+
+
+@router.get("/{job_id}/download")
+def download_job_zip(job_id: str, db: Session = Depends(get_db)) -> StreamingResponse:
+    """
+    Streams a ZIP archive containing all successfully generated PDF certificates for a job.
+    Returns HTTP 409 Conflict if the job is still running or has no generated certificates.
+    """
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise NotFoundException(f"Job with id '{job_id}' not found.")
+
+    if job.status in (JobStatus.PENDING.value, JobStatus.PROCESSING.value):
+        raise ConflictException(
+            "Job is still running. Cannot download ZIP until processing completes."
+        )
+
+    generated_certs = (
+        db.query(Certificate)
+        .filter(
+            Certificate.job_id == job_id,
+            Certificate.status == CertificateStatus.GENERATED.value,
+        )
+        .all()
+    )
+
+    if not generated_certs:
+        raise ConflictException("No generated certificates available for this job.")
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        for cert in generated_certs:
+            if cert.file_path and Path(cert.file_path).exists():
+                safe_name = "".join(
+                    c for c in cert.recipient_name if c.isalnum() or c in (" ", "-", "_")
+                ).strip()
+                filename = (
+                    f"{safe_name}_{cert.id[:8]}.pdf" if safe_name else f"certificate_{cert.id}.pdf"
+                )
+                zip_file.write(cert.file_path, arcname=filename)
+
+    zip_buffer.seek(0)
+    zip_filename = f"job_{job_id[:8]}_certificates.zip"
+
+    return StreamingResponse(
+        zip_buffer,
+        media_type="application/zip",
+        headers={"Content-Disposition": f"attachment; filename={zip_filename}"},
     )
