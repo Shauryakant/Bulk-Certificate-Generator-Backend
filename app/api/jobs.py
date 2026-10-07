@@ -5,6 +5,7 @@ from app.core.config import Settings, get_settings
 from app.db.session import get_db
 from app.schemas.jobs import JobCreateRequest, JobCreateResponse
 from app.services.job_service import create_job
+from app.services.worker import dispatch_job
 
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
 
@@ -19,7 +20,7 @@ def submit_job(
     """
     Submits a bulk certificate generation job.
     Validates request and recipient data, stores job and recipients in DB,
-    and returns HTTP 202 Accepted immediately.
+    and returns HTTP 202 Accepted immediately while background worker processes certificates.
     """
     job = create_job(
         db=db,
@@ -27,7 +28,8 @@ def submit_job(
         max_recipients=settings.MAX_RECIPIENTS_PER_REQUEST,
     )
 
-    # Note: Background worker processing will be dispatched here in milestone 14
+    # Dispatch to background thread pool (or synchronous execution in test mode)
+    dispatch_job(job.id)
 
     status_url = f"/api/v1/jobs/{job.id}"
 
