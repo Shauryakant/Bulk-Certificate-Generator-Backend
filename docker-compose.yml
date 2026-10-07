@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bulk_cert_api
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_NAME=Bulk Certificate Generator API
+      - ENV=production
+      - DEBUG=false
+      - DATABASE_URL=sqlite:////app/data/certificates.db
+      - STORAGE_DIR=/app/storage
+      - MAX_RECIPIENTS_PER_REQUEST=5000
+      - WORKER_THREADS=4
+      - SYNC_WORKER=false
+    volumes:
+      - storage_data:/app/storage
+      - db_data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  storage_data:
+  db_data:
