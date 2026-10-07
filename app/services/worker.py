@@ -206,3 +206,33 @@ def dispatch_job(
         process_job(job_id=job_id, generator=generator, storage=storage)
     else:
         executor.submit(process_job, job_id, generator, storage)
+
+
+def recover_interrupted_jobs(db: Session | None = None) -> int:
+    """
+    Scans database on application startup for jobs left in PROCESSING status (e.g. after a crash).
+    Re-queues their PENDING certificates for processing.
+    """
+    close_db = False
+    if db is None:
+        db = SessionLocal()
+        close_db = True
+
+    try:
+        interrupted_jobs = db.query(Job).filter(Job.status == JobStatus.PROCESSING.value).all()
+        recovered_count = len(interrupted_jobs)
+
+        if recovered_count > 0:
+            logger.info(
+                f"Startup recovery: Found {recovered_count} interrupted jobs in PROCESSING state."
+            )
+            for job in interrupted_jobs:
+                logger.info(f"Startup recovery: Re-dispatching job {job.id}")
+                dispatch_job(job.id)
+        else:
+            logger.info("Startup recovery: No interrupted jobs found.")
+
+        return recovered_count
+    finally:
+        if close_db:
+            db.close()
