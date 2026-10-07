@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Configuration & secrets
+.env
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Storage for generated certificates
+storage/
+storage_test/
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Ruff cache
+.ruff_cache/
