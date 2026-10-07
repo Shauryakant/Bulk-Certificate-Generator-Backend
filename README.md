@@ -9,6 +9,15 @@ A high-performance, asynchronous bulk certificate generation API designed for sc
 
 ---
 
+## 🚀 Live Production Deployment
+
+- **Live Base API**: [https://bulk-certificate-generator-api-kelv.onrender.com](https://bulk-certificate-generator-api-kelv.onrender.com)
+- **Interactive Swagger Docs**: [https://bulk-certificate-generator-api-kelv.onrender.com/docs](https://bulk-certificate-generator-api-kelv.onrender.com/docs)
+- **ReDoc Documentation**: [https://bulk-certificate-generator-api-kelv.onrender.com/redoc](https://bulk-certificate-generator-api-kelv.onrender.com/redoc)
+- **Liveness Health Check**: [https://bulk-certificate-generator-api-kelv.onrender.com/health](https://bulk-certificate-generator-api-kelv.onrender.com/health)
+
+---
+
 ## Architecture Overview
 
 ```mermaid
@@ -56,8 +65,8 @@ flowchart TD
 
 1. **Clone the repository**:
    ```bash
-   git clone <repository_url>
-   cd Aereo
+   git clone https://github.com/Shauryakant/Bulk-Certificate-Generator-Backend.git
+   cd Bulk-Certificate-Generator-Backend
    ```
 
 2. **Create and activate a virtual environment**:
@@ -87,16 +96,13 @@ flowchart TD
 
 ---
 
-## Running the Application
+## Running the Application Locally
 
-### Local Development Server
+### Development Server
 Start the Uvicorn server:
 ```bash
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
-Interactive API docs will be available at:
-- **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
-- **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
 
 ### Docker & Docker Compose
 Run the API using Docker Compose:
@@ -120,7 +126,7 @@ pytest -v --cov=app
 
 ---
 
-## API Reference & `curl` Examples
+## API Reference & Ready-to-Run `curl` Examples
 
 ### 1. Health Check
 Checks service liveness.
@@ -134,7 +140,7 @@ Checks service liveness.
 ```
 
 ```bash
-curl -X GET "http://localhost:8000/health"
+curl -X GET "https://bulk-certificate-generator-api-kelv.onrender.com/health"
 ```
 
 ---
@@ -187,7 +193,7 @@ Submits a bulk job containing many recipients for certificate generation.
 ```
 
 ```bash
-curl -X POST "http://localhost:8000/api/v1/jobs" \
+curl -X POST "https://bulk-certificate-generator-api-kelv.onrender.com/api/v1/jobs" \
   -H "Content-Type: application/json" \
   -d '{
     "event_name": "Distributed Systems Bootcamp",
@@ -226,7 +232,7 @@ Polls job processing status, counts, and completion percentage.
 ```
 
 ```bash
-curl -X GET "http://localhost:8000/api/v1/jobs/4cf4358f-94b8-4f1e-a5e9-503520d91e16"
+curl -X GET "https://bulk-certificate-generator-api-kelv.onrender.com/api/v1/jobs/4cf4358f-94b8-4f1e-a5e9-503520d91e16"
 ```
 
 ---
@@ -257,7 +263,7 @@ Lists certificates for a job with optional status filter and pagination.
 ```
 
 ```bash
-curl -X GET "http://localhost:8000/api/v1/jobs/4cf4358f-94b8-4f1e-a5e9-503520d91e16/certificates?status=GENERATED"
+curl -X GET "https://bulk-certificate-generator-api-kelv.onrender.com/api/v1/jobs/4cf4358f-94b8-4f1e-a5e9-503520d91e16/certificates?status=GENERATED"
 ```
 
 ---
@@ -270,7 +276,7 @@ Streams a single generated PDF certificate.
 - **Error Statuses**: `404 Not Found` (missing cert/file), `409 Conflict` (still pending or failed).
 
 ```bash
-curl -X GET "http://localhost:8000/api/v1/certificates/0fe9638d-e6fe-44ac-9652-49d5be51c016/download" \
+curl -X GET "https://bulk-certificate-generator-api-kelv.onrender.com/api/v1/certificates/0fe9638d-e6fe-44ac-9652-49d5be51c016/download" \
   --output certificate.pdf
 ```
 
@@ -284,7 +290,7 @@ Streams a ZIP file containing all successfully generated PDFs for a job.
 - **Error Statuses**: `404 Not Found` (job not found), `409 Conflict` (job still running or 0 generated certs).
 
 ```bash
-curl -X GET "http://localhost:8000/api/v1/jobs/4cf4358f-94b8-4f1e-a5e9-503520d91e16/download" \
+curl -X GET "https://bulk-certificate-generator-api-kelv.onrender.com/api/v1/jobs/4cf4358f-94b8-4f1e-a5e9-503520d91e16/download" \
   --output certificates.zip
 ```
 
