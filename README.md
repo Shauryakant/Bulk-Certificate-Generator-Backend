@@ -13,23 +13,23 @@ A high-performance, asynchronous bulk certificate generation API designed for sc
 
 ```mermaid
 flowchart TD
-    Client["Client / Frontend"] -->|POST /api/v1/jobs| API["FastAPI Application"]
-    API -->|1. Validate Request| Val["Validation Service"]
-    API -->|2. Store Job & Recipients| DB[("Relational DB (SQLite/Postgres)")]
-    API -->|3. Return 202 Accepted| Client
-    API -->|4. Dispatch Job| Worker["ThreadPoolExecutor Worker"]
+    Client["Client / Frontend"] -->|"POST /api/v1/jobs"| API["FastAPI Application"]
+    API -->|"1. Validate Request"| Val["Validation Service"]
+    API -->|"2. Store Job & Recipients"| DB[("Relational DB (SQLite/Postgres)")]
+    API -->|"3. Return 202 Accepted"| Client
+    API -->|"4. Dispatch Job"| Worker["ThreadPoolExecutor Worker"]
     
     subgraph Background Processing
-        Worker -->|Fetch Pending Cert| CertLoop["Certificate Loop"]
-        CertLoop -->|Render PDF| Gen["ReportLab Generator"]
-        CertLoop -->|Atomic Write| Storage["Local Storage / S3"]
-        CertLoop -->|Isolated Transaction| DB
+        Worker -->|"Fetch Pending Cert"| CertLoop["Certificate Loop"]
+        CertLoop -->|"Render PDF"| Gen["ReportLab Generator"]
+        CertLoop -->|"Atomic Write"| Storage["Local Storage / S3"]
+        CertLoop -->|"Isolated Transaction"| DB
     end
 
-    Client -->|GET /jobs/{id}| API
-    Client -->|GET /jobs/{id}/certificates| API
-    Client -->|GET /certificates/{id}/download| API
-    Client -->|GET /jobs/{id}/download| API
+    Client -->|"GET /jobs/:job_id"| API
+    Client -->|"GET /jobs/:job_id/certificates"| API
+    Client -->|"GET /certificates/:cert_id/download"| API
+    Client -->|"GET /jobs/:job_id/download"| API
 ```
 
 ---
