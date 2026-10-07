@@ -1,0 +1,47 @@
+{
+  "event_name": "Cloud Native Architecture Conference 2026",
+  "issuer_name": "Cloud Native Foundation",
+  "issue_date": "2026-10-07",
+  "recipients": [
+    {
+      "name": "Alice Johnson",
+      "email": "alice@example.com"
+    },
+    {
+      "name": "Bob Smith",
+      "email": "bob@example.com"
+    },
+    {
+      "name": "Charlie Davis",
+      "email": "charlie@example.com"
+    },
+    {
+      "name": "Diana Prince",
+      "email": "diana@example.com"
+    },
+    {
+      "name": "   ",
+      "email": "blank-name@example.com"
+    },
+    {
+      "name": "Evan Wright",
+      "email": "invalid-email-format"
+    },
+    {
+      "name": "Fiona Gallagher",
+      "email": "fiona@example.com"
+    },
+    {
+      "name": "Alice Johnson",
+      "email": "alice@example.com"
+    },
+    {
+      "name": "George Lucas",
+      "email": "george@example.com"
+    },
+    {
+      "name": "Hannah Montana",
+      "email": "hannah@example.com"
+    }
+  ]
+}
